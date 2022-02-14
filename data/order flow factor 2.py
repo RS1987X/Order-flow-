@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jan 26 19:32:49 2022
+Created on Sun Feb 13 21:46:50 2022
 
 @author: richa
 """
@@ -21,13 +21,15 @@ from datetime import datetime
 from dateutil import parser
 from statsmodels.graphics.tsaplots import plot_acf
 import statsmodels.api as sm
-
+import os
 
 tickers = ["EVO","SINCH","LATO_B","KINV_B","NIBE_B","EQT","MIPS","STORY_B","SF","PDX","SBB_B","BALD_B","SAGA_B","INDT","LIFCO_B","LAGR_B"]
 
 of_data = []
 op_dislocation_data = []
 i = 0
+directory = os.fsencode("C:\Users\richa\Documents\GitHub\Order-flow-\data")
+
 #,"20220131","20220201" #"20220128"
 #"20220128","20220131","20220201","20220202","20220203","20220204","20220207","20220208","20220209","20220210"
 dates = ["20220204","20220207","20220208","20220209","20220210","20220211"]
