@@ -17,7 +17,6 @@ from dateutil import parser
 from statsmodels.graphics.tsaplots import plot_acf
 import statsmodels.api as sm
 
-
 tickers = ["EVO","SINCH","LATO_B","KINV_B","NIBE_B","EQT","MIPS","STORY_B","SF","PDX","SBB_B","BALD_B","SAGA_B","INDT","LIFCO_B","LAGR_B"]
 of_data = []
 for x in tickers:

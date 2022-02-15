@@ -26,11 +26,11 @@ import statsmodels.api as sm
 tickers = ["EVO","SINCH","LATO_B","KINV_B","NIBE_B","EQT","MIPS","STORY_B","SF","PDX","SBB_B","BALD_B","SAGA_B","INDT","LIFCO_B","LAGR_B"]
 
 of_data = []
-op_dislocation_data = []
+percent_vol_data = []
 i = 0
-#,"20220131","20220201" #"20220128"
-#"20220128","20220131","20220201","20220202","20220203","20220204","20220207","20220208","20220209","20220210"
-dates = ["20220204","20220207","20220208","20220209","20220210","20220211"]
+
+#"20220128","20220131","20220201","20220202","20220203","20220204","20220207","20220208","20220209","20220210","20220211","20220214"
+dates = ["20220128","20220131","20220201","20220202","20220203","20220204","20220207","20220208","20220209","20220210","20220211","20220214","20220215"]
 for d in dates:
     print(" ")
     print(d)
@@ -132,75 +132,96 @@ for d in dates:
         ret_str = "{:.1%}".format(ret)
         print("Post open return to close " + ret_str)
         print(" ")
-        of_data.append((x,percent_of_opening_vol,ret))
+        percent_vol_data.append((x,percent_of_opening_vol,ret))
+        of_data.append((x,d,opening_of,ret))
         #op_dislocation_data.append((x,opening_dislocation,ret))
         i = i + 1
 
-percent_of_opening_vols = [x[1] for x in of_data]
-returns = [x[2] for x in of_data]
+of_data = np.array(of_data)
+of = of_data[of_data[:,0]=="EVO",2]
+of = of[:, np.newaxis]
+returns = of_data[of_data[:,0]=="EVO",3]
+returns = returns[:, np.newaxis]
 
-of_data.sort(key = lambda x: x[1])
-of_data_df = pd.DataFrame(of_data, columns=['name', 'percent_of_opening_vol', 'returns'])
-threshold = 0.3
-stocks_w_signal = of_data_df[(of_data_df["percent_of_opening_vol"] < -threshold) | (of_data_df["percent_of_opening_vol"] > threshold)]
+for x in tickers[1:]:
+    of_to_append = of_data[of_data[:,0]==x,2][:,np.newaxis]
+    of = np.append(of,of_to_append, axis=1)
+    returns_to_append =  of_data[of_data[:,0]==x,3][:,np.newaxis]
+    returns =  np.append(returns,returns_to_append, axis=1)
+    
+of = of.astype(float)
+of_df = pd.DataFrame(of,columns=tickers)
+of_pos = of_df[of_df>=0]
+of_neg = of_df[of_df<0]
 
-shorts = stocks_w_signal["percent_of_opening_vol"] < 0
-longs = stocks_w_signal["percent_of_opening_vol"] > 0
-strat_ret = longs*stocks_w_signal["returns"] - shorts*stocks_w_signal["returns"]
-print("Avg trade return " + str(strat_ret.mean()))
-print("Volatility of returns " + str(strat_ret.std()))
-print("Kelly f " + str(strat_ret.mean()/strat_ret.std()**2))
-print(" ")
+
+#of_mean = abs(of_df).rolling(10).mean()
+#of_ratio = of_df/of_mean.shift(1)
+of_pos_mean = of_pos.expanding(min_periods=5).mean()[~of_pos.isna()]
+of_pos_std = of_pos.expanding(min_periods=5).std()[~of_pos.isna()]
+
+#of_pos_mean = of_pos.rolling(3).mean()
+#of_pos_std = of_pos.rolling(3).std()
+of_pos_n_std_dev = (of_pos-of_pos_mean.shift(1))/of_pos_std.shift(1)
+
+#of_neg_mean = of_neg.rolling(3).mean()
+#of_neg_std = of_neg.rolling(3).std()
+
+of_neg_mean = of_neg.expanding(min_periods=5).mean()[~of_neg.isna()]
+of_neg_std = of_neg.expanding(min_periods=5).std()[~of_neg.isna()]
+
+of_neg_n_std_dev = (of_neg-of_neg_mean.shift(1))/of_neg_std.shift(1)
+
+returns = returns.astype(float)
+returns_df  = pd.DataFrame(returns,columns=tickers)
+returns_of_pos = returns_df[~of_pos_n_std_dev.isna()]
+returns_of_neg = returns_df[~of_neg_n_std_dev.isna()]
+
+
+
+#opening_of = [x[1] for x in of_data]
+#returns = [x[2] for x in of_data]
 
 # =============================================================================
 # 
-# dislocation_of_stock = [x[1] for x in op_dislocation_data]
-# return_of_stock = [x[2] for x in op_dislocation_data]
-# # 
-# op_dislocation_data.sort(key = lambda x: x[1])
-# =============================================================================
+# percent_of_opening_vols = [x[1] for x in percent_vol_data]
+# returns = [x[2] for x in percent_vol_data]
+# 
+# percent_vol_data.sort(key = lambda x: x[1])
+# percent_vol_data_df = pd.DataFrame(percent_vol_data, columns=['name', 'percent_of_opening_vol', 'returns'])
+# threshold = 0.3
+# stocks_w_signal = percent_vol_data_df[(percent_vol_data_df["percent_of_opening_vol"] < -threshold) | (percent_vol_data_df["percent_of_opening_vol"] > threshold)]
+# 
+# shorts = stocks_w_signal["percent_of_opening_vol"] < 0
+# longs = stocks_w_signal["percent_of_opening_vol"] > 0
+# strat_ret = longs*stocks_w_signal["returns"] - shorts*stocks_w_signal["returns"]
+# print("Avg trade return " + str(strat_ret.mean()))
+# print("Volatility of returns " + str(strat_ret.std()))
+# print("Kelly f " + str(strat_ret.mean()/strat_ret.std()**2))
 # print(" ")
-# #longs
-# print("LONGS")
-# print(str(op_dislocation_data[0]))
-# print(str(op_dislocation_data[1]))
-# #shorts
-# print("SHORTS")
-# print(str(op_dislocation_data[-1]))
-# print(str(op_dislocation_data[-2]))
-
-
+# 
+# 
+# 
+# plt.figure(1)
+# plt.scatter(percent_of_opening_vols,returns)
+# lm = sm.OLS(returns,percent_of_opening_vols,missing='drop').fit()
+# print(lm.summary())
+# 
+# plt.figure(2)
+# plt.scatter(stocks_w_signal["percent_of_opening_vol"],stocks_w_signal["returns"])
+# lm2 = sm.OLS(stocks_w_signal["returns"],stocks_w_signal["percent_of_opening_vol"],missing='drop').fit()
+# print(lm2.summary())
+# 
+# =============================================================================
 
 plt.figure(1)
-plt.scatter(percent_of_opening_vols,returns)
-lm = sm.OLS(returns,percent_of_opening_vols,missing='drop').fit()
+plt.scatter(of_pos_n_std_dev,returns_of_pos)
+lm = sm.OLS(returns_of_pos,of_pos_n_std_dev,missing='drop').fit()
 print(lm.summary())
 
 plt.figure(2)
-plt.scatter(stocks_w_signal["percent_of_opening_vol"],stocks_w_signal["returns"])
-lm2 = sm.OLS(stocks_w_signal["returns"],stocks_w_signal["percent_of_opening_vol"],missing='drop').fit()
-print(lm2.summary())
+plt.scatter(of_neg_n_std_dev,returns_of_neg)
 
-
-
-# =============================================================================
+lm = sm.OLS(returns_of_neg,of_neg_n_std_dev,missing='drop').fit()
+print(lm.summary())
 # 
-# 
-# #sm.add_constant(
-# plt.figure(3)
-# plt.scatter(dislocation_of_stock,return_of_stock)
-# lm3 = sm.OLS(return_of_stock,dislocation_of_stock,missing='drop').fit()
-# print(lm3.summary())
-# 
-# 
-# =============================================================================
-
-
-
-
-
-
-#data[data.iloc[:,11] == ">",11] = 1
-#data[data.iloc[:,11] == "<",11] = -1
-
-#data = pd.DataFrame(data)
