@@ -28,7 +28,7 @@ tickers = ["EVO","SINCH","LATO_B","KINV_B","NIBE_B","EQT","MIPS","STORY_B","SF",
 of_data = []
 op_dislocation_data = []
 i = 0
-directory = os.fsencode("C:\Users\richa\Documents\GitHub\Order-flow-\data")
+#directory = os.fsencode("C:\Users\richa\Documents\GitHub\Order-flow-\data")
 
 #,"20220131","20220201" #"20220128"
 #"20220128","20220131","20220201","20220202","20220203","20220204","20220207","20220208","20220209","20220210"
