@@ -32,7 +32,7 @@ percent_vol_data = []
 #"20220128","20220131","20220201","20220202","20220203","20220204","20220207","20220208","20220209","20220210","20220211","20220214","20220215"
 dates = (["20220128","20220131","20220201","20220202","20220203","20220204",
          "20220207","20220208","20220209","20220210","20220211","20220214",
-         "20220215","20220216","20220217"])
+         "20220215","20220216","20220217","20220218","20220221"])
 for d in dates:
     #print(" ")
     #print(d)
@@ -157,13 +157,13 @@ of_df = pd.DataFrame(of,columns=tickers)
 of_pos = of_df[of_df>=0]
 of_neg = of_df[of_df<0]
 
-of_pos_mean = of_pos.expanding(min_periods=3).mean()[~of_pos.isna()]
-of_pos_std = of_pos.expanding(min_periods=3).std()[~of_pos.isna()]
+of_pos_mean = of_pos.expanding(min_periods=5).mean()[~of_pos.isna()]
+of_pos_std = of_pos.expanding(min_periods=5).std()[~of_pos.isna()]
 
 of_pos_n_std_dev = (of_pos-of_pos_mean.shift(1))/of_pos_std.shift(1)
 
-of_neg_mean = of_neg.expanding(min_periods=3).mean()[~of_neg.isna()]
-of_neg_std = of_neg.expanding(min_periods=3).std()[~of_neg.isna()]
+of_neg_mean = of_neg.expanding(min_periods=5).mean()[~of_neg.isna()]
+of_neg_std = of_neg.expanding(min_periods=5).std()[~of_neg.isna()]
 
 of_neg_n_std_dev = (of_neg-of_neg_mean.shift(1))/of_neg_std.shift(1)
 
